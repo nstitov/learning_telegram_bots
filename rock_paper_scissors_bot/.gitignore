@@ -1,0 +1,6 @@
+.env
+
+.mypy cache/
+.vscode/
+venv/
+__pacache__/

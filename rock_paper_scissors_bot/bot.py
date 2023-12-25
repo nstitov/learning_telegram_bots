@@ -17,7 +17,7 @@ async def main():
         level = logging.INFO,
         format='%(filename)s:%(lineno)d #%(levelname)-8s '
             '[%(asctime)s] - %(name)s - %(message)s')
-    
+
     # Выводим в консоль информацию о начале запуска бота
     logger.info('Starting bot')
 
@@ -25,9 +25,9 @@ async def main():
     config: Config = load_config()
 
     # Инициализируем бот и диспетчер
-    bot: Bot = Bot(token=config.bot.token,
+    bot = Bot(token=config.bot.token,
                    parse_mode='HTML')
-    dp: Dispatcher = Dispatcher()
+    dp = Dispatcher()
 
     # Регистрируем роутеры в диспетчере
     dp.include_router(user_handlers.router)

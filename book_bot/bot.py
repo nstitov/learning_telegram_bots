@@ -1,23 +1,36 @@
-from dataclasses import dataclass
-from typing import Optional
+import asyncio
+import logging
 
-from environs import Env
+from aiogram import Bot, Dispatcher
 
-
-@dataclass
-class TgBot:
-    token: str
-    admins_lst: list[int]
+from config_data.config import Config, load_config
+from handlers import other_handlers, user_handlers
+from keyboards.main_menu import set_main_menu
 
 
-@dataclass
-class Config:
-    tg_bot: TgBot
+logger = logging.getLogger(__name__)
+
+async def main():
+    logging.basicConfig(level=logging.INFO,
+                        format='%(filename)s:%(lineno)d #%(levelname)-8s '
+                        '[%(asctime)s] - %(name)s - %(message)s')
+
+    logger.info('Starting bot')
+
+    config: Config = load_config()
+
+    bot = Bot(token=config.tg_bot.token,
+              parse_mode='HTML')
+    dp = Dispatcher()
+
+    await set_main_menu(bot)
+
+    dp.include_router(user_handlers.router)
+    dp.include_router(other_handlers.router)
+
+    await bot.delete_webhook(drop_pending_updates=True)
+    await dp.start_polling(bot)
 
 
-def load_config(path: Optional[str]=None) -> Config:
-    env = Env()
-    env.read_env(path)
-    return Config(tg_bot=TgBot(
-        token=env['BOT_TOKEN'],
-        admins_lst=list(map(int, env.list['ADMIN_IDS']))))
+if __name__ == '__main__':
+    asyncio.run(main())

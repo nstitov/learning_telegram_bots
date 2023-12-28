@@ -3,7 +3,7 @@ class ClickMode:
     FLAG = 1
 
 
-class CallMask:
+class CellMask:
     HIDDEN = 0
     OPEN = 1
     BOMB = 2

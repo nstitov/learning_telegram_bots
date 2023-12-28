@@ -3,7 +3,7 @@ from random import randint
 from typing import List, Tuple
 
 
-def generate_square_fieil(k: int) -> List[List]:
+def generate_square_field(k: int) -> List[List]:
     result = [[0] * k for _ in range(k)]
     return result
 
@@ -33,7 +33,7 @@ def generate_custom(size: int, bombs: int, predefined: Tuple[int, int]) -> List[
     :param predefined: coordinates of cell, which MUST be free of bombs
     :return: an array of arrays of cells.
     """
-    field = generate_square_fieil(size)
+    field = generate_square_field(size)
     current_count = 0
 
     while current_count < bombs:

@@ -2,11 +2,10 @@ from contextlib import suppress
 from datetime import datetime
 from typing import Dict, List
 
+from db.models import GameHistoryEntry
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from db.models import GameHistoryEntry
 
 
 async def get_games_by_id(

@@ -1,7 +1,6 @@
+from db.base import Base
 from sqlalchemy import BigInteger, Boolean, Column, DateTime, Integer
 from sqlalchemy.dialects.postgresql import UUID
-
-from db.base import Base
 
 
 class GameHistoryEntry(Base):

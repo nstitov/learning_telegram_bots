@@ -14,7 +14,6 @@ if not os.path.exists(DATABASE_NAME):
 @dataclass(slots=True, frozen=True)
 class TgBot:
     token: str
-    admins_lst: list
 
 
 @dataclass(slots=True, frozen=True)
@@ -24,8 +23,4 @@ class Config:
 
 env = Env()
 env.read_env()
-config = Config(
-    tg_bot=TgBot(
-        token=env("BOT_TOKEN"), admins_lst=list(map(int, env.list("ADMIN_IDS")))
-    )
-)
+config = Config(tg_bot=TgBot(token=env("BOT_TOKEN")))

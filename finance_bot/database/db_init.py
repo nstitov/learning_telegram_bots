@@ -1,4 +1,6 @@
 import sqlite3
+from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 
 categories = [
@@ -21,6 +23,15 @@ categories = [
 ]
 
 
+@dataclass
+class Transaction:
+    expense_name: str
+    cost: float
+    amount: int = 2
+    create_date: date = date.today()
+    comment: str = ""
+
+
 def init_database(database_name: Path) -> None:
     """Create initial required table into database."""
     with sqlite3.connect(database_name) as connection:
@@ -28,18 +39,10 @@ def init_database(database_name: Path) -> None:
 
         cursor.execute(
             """
-        CREATE TABLE IF NOT EXISTS Categories (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            category_name TEXT UNIQUE
-        )
-        """
-        )
-
-        cursor.execute(
-            """
         CREATE TABLE IF NOT EXISTS Users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             telegram_id INTEGER NOT NULL UNIQUE,
+            language_code TEXT,
             user_name TEXT,
             reg_date TEXT
         )
@@ -50,9 +53,11 @@ def init_database(database_name: Path) -> None:
             """
         CREATE TABLE IF NOT EXISTS Expenses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            expense_name TEXT UNIQUE,
+            expense_name TEXT,
+            user_id INTEGER,
             category_id INTEGER,
-            FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE RESTRICT
+            FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
         )
         """
         )
@@ -61,33 +66,25 @@ def init_database(database_name: Path) -> None:
             """
         CREATE TABLE IF NOT EXISTS Transactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
             expense_id INTEGER,
             cost REAL NOT NULL,
             created_date TEXT,
             amount INTEGER DEFAULT 1,
             comment TEXT DEFAULT NULL,
-            FOREIGN KEY (expense_id) REFERENCES expences (id) ON DELETE RESTRICT,
-            FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+            FOREIGN KEY (expense_id) REFERENCES expences (id) ON DELETE CASCADE
         )
         """
         )
 
         cursor.execute(
             """
-        CREATE TABLE IF NOT EXISTS User_categories (
+        CREATE TABLE IF NOT EXISTS Сategories (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER,
-            category_id INTEGER,
-            FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE RESTRICT,
+            category_name TEXT,
             FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
         )
         """
-        )
-
-        categories_tuple = [(category,) for category in categories]
-        cursor.executemany(
-            "INSERT INTO Categories (category_name) VALUES (?)", categories_tuple
         )
 
 

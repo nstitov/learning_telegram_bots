@@ -51,18 +51,40 @@ def add_user_categorie_to_db(user_id: int, category_id: int) -> None:
         logger.info("User category added to database.")
 
 
-def add_user_to_db(
-    telegram_id: int, user_name: str = None, reg_date: Optional[datetime] = None
-) -> None:
-    if not reg_date:
-        reg_date = datetime.utcnow()
+# +
+def check_user_into_db(telegram_id: int):
     with sqlite3.connect(DATABASE_NAME) as connection:
         cursor = connection.cursor()
-        cursor.execute(
-            "INSERT INTO Users (telegram_id, user_name, reg_date) VALUES (?, ?, ?)",
-            (telegram_id, user_name, reg_date),
-        )
-        logger.info("User added to database.")
+        cursor.execute("SELECT * FROM Users WHERE telegram_id=?", (telegram_id,))
+        if cursor.fetchone():
+            logger.info(f"User with Telegram ID {telegram_id} in database.")
+            return True
+        logger.info(f"User with Telegram ID {telegram_id} not in database.")
+        return False
+
+
+# +
+def add_user_to_db(
+    telegram_id: int,
+    language_code: str,
+    user_name: str,
+) -> None:
+    if not check_user_into_db(telegram_id):
+        with sqlite3.connect(DATABASE_NAME) as connection:
+            cursor = connection.cursor()
+            cursor.execute(
+                """
+                INSERT INTO Users
+                (telegram_id, language_code, user_name, reg_date) VALUES (?, ?, ?, ?)
+                """,
+                (
+                    telegram_id,
+                    language_code,
+                    user_name,
+                    datetime.utcnow().replace(microsecond=0).isoformat(),
+                ),
+            )
+            logger.info("User added to database.")
 
 
 def get_expense_id(expense_name: str) -> Optional[int]:
@@ -79,6 +101,13 @@ def get_expense_id(expense_name: str) -> Optional[int]:
             # TODO: Check Exception type if extense not found
             logger.exception("Exspense wasn't found in database.")
             return None
+
+
+# def get_category_name(expense_name: str) -> Optional[int]:
+#     with sqlite3.connect(DATABASE_NAME) as connection:
+#         cursor = connection.cursor()
+#         try:
+#             pass
 
 
 def get_user_id(telegram_id: int) -> Optional[int]:

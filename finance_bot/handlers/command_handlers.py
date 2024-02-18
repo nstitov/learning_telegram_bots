@@ -12,13 +12,14 @@ router = Router()
 class FSMAddTransaction(StatesGroup):
     fill_transaction = State()
     confirm_transaction = State()
+    add_new_expense = State()
+    add_new_category = State()
 
 
 @router.message(Command("start"), StateFilter(default_state))
 async def process_start_command(message: Message, i18n: dict[str, str]):
     add_user_to_db(
         message.from_user.id,
-        message.from_user.language_code,
         message.from_user.first_name,
     )
     await message.answer(text=i18n["/start"])

@@ -2,9 +2,10 @@ from typing import Any, Awaitable, Callable, Dict
 
 from aiogram import BaseMiddleware, html
 from aiogram.dispatcher.flags import get_flag
+from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 
-from cbdata import (
+from bot.cbdata import (
     ClickCallbackFactory,
     SwitchFlagCallbackFactory,
     SwitchModeCallbackFactory,
@@ -18,13 +19,13 @@ class CheckActiveGameMiddleware(BaseMiddleware):
         event: CallbackQuery,
         data: Dict[str, Any],
     ) -> Any:
-        """
-        Check whether game is active. This middleware is intended for CallbackQuery only!
+        """Check whether game is active. This middleware is intended for CallbackQuery
+        only!
         """
         need_check_handler = get_flag(data, "need_check_game")
         if not need_check_handler:
             return await handler(event, data)
-        state = data["state"]
+        state: FSMContext = data["state"]
         user_data = await state.get_data()
         fsm_game_id = user_data.get("game_id")
         if not fsm_game_id:

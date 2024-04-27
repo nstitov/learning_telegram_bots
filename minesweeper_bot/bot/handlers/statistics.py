@@ -1,16 +1,16 @@
 from typing import Literal
 
 from aiogram import Router
+from aiogram.filters import Command
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db.models import GameHistoryEntry
-from db.requests import get_games_by_id
+from bot.db.requests import get_games_by_id
 
 router = Router()
 
 
-@router.message(commands=["stats"])
+@router.message(Command("stats"))
 async def show_stats(message: Message, session: AsyncSession):
     """
     Get player personal statistics
@@ -27,11 +27,10 @@ async def show_stats(message: Message, session: AsyncSession):
     user_data: dict[int, dict[Literal["wins", "loses"], int]] = {}
 
     # Gather wins and loses, grouping them by field size locally
-    game: GameHistoryEntry
     for game in games:
         user_data.setdefault(game.field_size, {"wins": 0, "loses": 0})
         if game.victory is True:
-            user_data[game.field_size]["winds"] += 1
+            user_data[game.field_size]["wins"] += 1
         else:
             user_data[game.field_size]["loses"] += 1
 
@@ -45,17 +44,17 @@ async def show_stats(message: Message, session: AsyncSession):
         if field_data["loses"] == 0:
             winrate = 100
         else:
-            winrate = field_data["winds"] / total_current * 100
+            winrate = field_data["wins"] / total_current * 100
 
-    result_text_array.append(
-        "💣 <b>{size}x{size}</b> field:\n"
-        "Games: <b>{total}</b>. Wins: <b>{wins}</b> (<b>{winrate:.0f}%</b>)".format(
-            size=field_size,
-            total=total_current,
-            wins=field_data["wins"],
-            winrate=winrate,
+        result_text_array.append(
+            "💣 <b>{size}x{size}</b> field:\n"
+            "Games: <b>{total}</b>. Wins: <b>{wins}</b> (<b>{winrate:.0f}%</b>)".format(
+                size=field_size,
+                total=total_current,
+                wins=field_data["wins"],
+                winrate=winrate,
+            )
         )
-    )
     # Add a header to the beginning of result message
     result_text_array.insert(
         0, f"📊 <u>Your personal stats</u>:\nTotal games played: <b>{total_games}</b>"

@@ -1,11 +1,11 @@
 from contextlib import suppress
 from datetime import datetime
-from typing import Dict, List
 
-from db.models import GameHistoryEntry
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from bot.db.models import GameHistoryEntry
 
 
 async def get_games_by_id(
@@ -35,7 +35,7 @@ async def log_game(session: AsyncSession, data: dict, telegram_id: int, status: 
     """
     entry = GameHistoryEntry()
     entry.game_id = data["game_id"]
-    entry.player_at = datetime.utcnow()
+    entry.played_at = datetime.utcnow()
     entry.telegram_id = telegram_id
     entry.field_size = data["game_data"]["size"]
     entry.victory = status == "win"

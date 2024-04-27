@@ -2,8 +2,8 @@ from typing import Dict, List, Set, Tuple, Union
 
 from texttable import Texttable
 
-from minesweeper.generators import generate_custom, generate_square_field
-from minesweeper.states import CellMask, ClickMode
+from bot.minesweeper.generators import generate_custom, generate_square_field
+from bot.minesweeper.states import CellMask, ClickMode
 
 
 def get_fake_newgame_data(size: int, bombs: int) -> Dict:
@@ -14,23 +14,37 @@ def get_fake_newgame_data(size: int, bombs: int) -> Dict:
     :param bombs: number of bombs to place
     :return: a dictionary with field data for a new game
     """
-    result = {'current_mode': ClickMode.CLICK, 'size': size,
-              'bombs': bombs, 'initial': True}
+    result = {
+        "current_mode": ClickMode.CLICK,
+        "size": size,
+        "bombs": bombs,
+        "initial": True,
+    }
     field = generate_square_field(size)
     for x in range(size):
         for y in range(size):
-            field[x][y] = {'value': field[x][y], 'mask': CellMask.HIDDEN,
-                           'x': x, 'y': y}
-    result['cells'] = field
+            field[x][y] = {
+                "value": field[x][y],
+                "mask": CellMask.HIDDEN,
+                "x": x,
+                "y": y,
+            }
+    result["cells"] = field
     return result
 
 
-def get_real_game_data(size: int, bombs: int, predefined: Tuple[int, int]) -> List[List[Dict]]:
+def get_real_game_data(
+    size: int, bombs: int, predefined: Tuple[int, int]
+) -> List[List[Dict]]:
     field = generate_custom(size, bombs, predefined)
     for x in range(size):
         for y in range(size):
-            field[x][y] = {'value': field[x][y], 'mask': CellMask.HIDDEN,
-                           'x': x, 'y': y}
+            field[x][y] = {
+                "value": field[x][y],
+                "mask": CellMask.HIDDEN,
+                "x": x,
+                "y": y,
+            }
     return field
 
 
@@ -44,7 +58,7 @@ def untouched_cells_count(cells: List[List[Dict]]) -> int:
     counter = 0
     for row in cells:
         for cell in row:
-            if cell['mask'] == CellMask.HIDDEN:
+            if cell["mask"] == CellMask.HIDDEN:
                 counter += 1
     return counter
 
@@ -59,7 +73,7 @@ def all_flags_match_bombs(cells: List[List[Dict]]) -> bool:
     """
     for row in cells:
         for cell in row:
-            if cell['mask'] == CellMask.FLAG and cell['value'] != '*':
+            if cell["mask"] == CellMask.FLAG and cell["value"] != "*":
                 return False
     return True
 
@@ -74,7 +88,7 @@ def all_free_cells_are_open(cells: List[List[Dict]]) -> bool:
     hidden_cells_count = 0
     for row in cells:
         for cell in row:
-            if cell['mask'] != CellMask.OPEN and cell['value'] != '*':
+            if cell["mask"] != CellMask.OPEN and cell["value"] != "*":
                 hidden_cells_count += 1
     return hidden_cells_count == 0
 
@@ -84,8 +98,8 @@ class CellsChecker:
     This is a special class to check minefield cells
     """
 
-    ROW = 0     # first item in tuple is row
-    COL = 1     # second item in tuple is column
+    ROW = 0  # first item in tuple is row
+    COL = 1  # second item in tuple is column
 
     def __init__(self, cells: List[List[Union[Dict, int]]]):
         self.cells = cells
@@ -108,7 +122,7 @@ class CellsChecker:
         # current_cell_value is always a dict except when running tests
         current_cell_value = self.cells[cell[self.ROW]][cell[self.COL]]
         if isinstance(current_cell_value, Dict):
-            current_cell_value = current_cell_value['value']
+            current_cell_value = current_cell_value["value"]
 
         if current_cell_value != 0:
             return result
@@ -116,27 +130,28 @@ class CellsChecker:
         self.checked_cells.add(cell)
 
         adjacent_cells = (
-            (cell[self.ROW] - 1, cell[self.COL]),       # up
-            (cell[self.ROW] + 1, cell[self.COL]),       # down
-            (cell[self.ROW], cell[self.COL] - 1),       # left
-            (cell[self.ROW], cell[self.COL] + 1),       # right
-            (cell[self.ROW] - 1, cell[self.COL] - 1),   # up left
-            (cell[self.ROW] - 1, cell[self.COL] + 1),   # up right
-            (cell[self.ROW] + 1, cell[self.COL] - 1),   # down left
-            (cell[self.ROW] + 1, cell[self.COL] + 1),   # dowm right
+            (cell[self.ROW] - 1, cell[self.COL]),  # up
+            (cell[self.ROW] + 1, cell[self.COL]),  # down
+            (cell[self.ROW], cell[self.COL] - 1),  # left
+            (cell[self.ROW], cell[self.COL] + 1),  # right
+            (cell[self.ROW] - 1, cell[self.COL] - 1),  # up left
+            (cell[self.ROW] - 1, cell[self.COL] + 1),  # up right
+            (cell[self.ROW] + 1, cell[self.COL] - 1),  # down left
+            (cell[self.ROW] + 1, cell[self.COL] + 1),  # dowm right
         )
 
         for row_index, col_index in adjacent_cells:
-            if (0 <= row_index < self.size and
-                0 <= col_index < self.size and
-                (row_index, col_index) not in self.checked_cells):
+            if (
+                0 <= row_index < self.size
+                and 0 <= col_index < self.size
+                and (row_index, col_index) not in self.checked_cells
+            ):
                 result += self.get_cells_to_open((row_index, col_index))
         return list(set(result))
 
 
 def gather_open_cells(
-        cells: List[List[Union[Dict, int]]],
-        current: Tuple[int, int]
+    cells: List[List[Union[Dict, int]]], current: Tuple[int, int]
 ) -> List[Tuple[int, int]]:
     """
     If current cell stores value 0, find the whole block of numbers.
@@ -162,27 +177,27 @@ def make_text_table(cells: List[List[Dict]]) -> str:
     table = Texttable()
     cells_size = len(cells)
     table.set_cols_width([3] * cells_size)
-    table.set_cols_align(['c'] * cells_size)
+    table.set_cols_align(["c"] * cells_size)
 
     data_rows = []
     for cell_row in cells:
         data_single_row = []
         for cell in cell_row:
-            cell_mask = cell['mask']
+            cell_mask = cell["mask"]
             if cell_mask == CellMask.OPEN:
-                data_single_row.append(cell['value'])
+                data_single_row.append(cell["value"])
             elif cell_mask == CellMask.HIDDEN:
-                if cell['value'] == '*':
-                    data_single_row.append('💣')
+                if cell["value"] == "*":
+                    data_single_row.append("💣")
                 else:
-                    data_single_row.append('•')
+                    data_single_row.append("•")
             elif cell_mask == CellMask.FLAG:
-                if cell['value'] == '*':
-                    data_single_row.append('🚩')
+                if cell["value"] == "*":
+                    data_single_row.append("🚩")
                 else:
-                    data_single_row.append('🚫')
+                    data_single_row.append("🚫")
             elif cell_mask == CellMask.BOMB:
-                data_single_row.append('💥')
+                data_single_row.append("💥")
         data_rows.append(data_single_row)
     table.add_rows(data_rows, header=False)
-    return f'<code>{table.draw()}</code>'
+    return f"<code>{table.draw()}</code>"
